@@ -52,18 +52,6 @@
 -define(LCD_5x10DOTS            , 16#04).
 -define(LCD_5x8DOTS             , 16#00).
 
--define(MCP23017_IODIRA , 16#00).
--define(MCP23017_IODIRB , 16#01).
-% buttons
--define(MCP23017_GPPUA  , 16#0C).
--define(MCP23017_GPPUB  , 16#0D).
-% out
--define(MCP23017_OLATA  , 16#14).
--define(MCP23017_OLATB  , 16#15).
-% in
--define(MCP23017_GPIOA  , 16#12).
--define(MCP23017_GPIOB  , 16#13).
-
 -define(GPIO_IN,   1).
 -define(GPIO_OUT,  0).
 -define(GPIO_HIGH, 1).
@@ -133,10 +121,10 @@ init() ->
     loop(State)
 .
 
-flip(Value, Flag, Enable) when Enable =:= 1 ->
-	Value bor Flag;
-flip(Value, Flag, _Enable) ->
-	Value band bnot(Flag).
+flip(Value, FlagOn, _FlagOff, Enable) when Enable =:= 1 ->
+	Value bor FlagOn;
+flip(Value, _FlagOn, FlagOff, Enable) when Enable =:= 0 ->
+	Value band bnot(FlagOff).
 
 loop(State) ->
 	receive
@@ -146,12 +134,12 @@ loop(State) ->
 			loop(State);
 
 		{enable_display, _From, Enable} ->
-			DisplayControl = flip(State#state.displaycontrol, ?LCD_DISPLAYON, Enable),
+			DisplayControl = flip(State#state.displaycontrol, ?LCD_DISPLAYON, ?LCD_DISPLAYOFF, Enable),
 			write8(?LCD_DISPLAYCONTROL bor DisplayControl),
 			loop(State#state{displaycontrol=DisplayControl});
 
 		{show_cursor, _From, Show} ->
-			DisplayControl = flip(State#state.displaycontrol, ?LCD_CURSORON, Show),
+			DisplayControl = flip(State#state.displaycontrol, ?LCD_CURSORON, ?LCD_CURSOROFF, Show),
 			write8(?LCD_DISPLAYCONTROL bor DisplayControl),
 			loop(State#state{displaycontrol=DisplayControl})
 	end.

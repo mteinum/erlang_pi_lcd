@@ -16,8 +16,6 @@
 #include "erl_driver.h"
 
 // commands for (*control)
-#define CMD_WRITE_BYTE_DATA 1
-#define CMD_READ_BYTE_DATA  2
 #define CMD_WRITE_BLOCK_DATA 3
 
 typedef struct {
@@ -67,27 +65,7 @@ static ErlDrvSSizeT i2c_drv_ctl(ErlDrvData handle,
     union i2c_smbus_data data;
     i2c_drv_portdata* d = (i2c_drv_portdata*)handle;
 
-    if (cmd == CMD_WRITE_BYTE_DATA && len == 2) {
-        // cmd, value
-        result = i2c_smbus_write_byte_data(d->fd, (__u8)buf0[0], (__u8)buf0[1]);
-
-        fprintf(stderr, "i2c_smbus_write_byte_data reg=0x%02X data=0x%02X result=%i\r\n",
-            buf0[0], buf0[1], result);
-    }
-    else if (cmd == CMD_READ_BYTE_DATA && len == 1) {
-        result = i2c_smbus_read_byte_data(d->fd, (__u8)buf0[0]);
-
-        fprintf(stderr, "i2c_smbus_read_byte_data  reg=0x%02X data=0x%02X\r\n",
-            buf0[0], result);
-
-        if (result < 0)
-            return 0;
-
-        *rbuf[0] = (char) result;
-
-        return 1;
-    }
-    else if (cmd == CMD_WRITE_BLOCK_DATA && len > 0) {
+    if (cmd == CMD_WRITE_BLOCK_DATA && len == 3) {
 
         data.block[0] = 2;
         data.block[1] = buf0[1];
@@ -99,24 +77,10 @@ static ErlDrvSSizeT i2c_drv_ctl(ErlDrvData handle,
             (__u8)buf0[0],
             I2C_SMBUS_I2C_BLOCK_BROKEN,
             &data);
-/*
-        result = i2c_smbus_write_block_data(
-            d->fd,
-            (__u8)buf0[0],
-            (__u8)len - 1,
-            (const __u8 *)(buf0 + 1)); */
 
-        // if (result < 0)
+        if (result)
             fprintf(stderr, "i2c_smbus_write_block_data reg=0x%02X: [%i, %i] result=%i\r\n",
                 buf0[0], buf0[1], buf0[2], result);
-
-/*
-        fprintf(stderr, "i2c_smbus_write_block_data reg=0x%02X len=%i result=%i\r\n",
-            buf0[0], len - 1, result);
-
-        for (i=1; i < len; i++)
-            fprintf(stderr, "buf[%i] = 0x%02X\r\n", i, buf0[i]);
-*/
 
         return 0;
     }
