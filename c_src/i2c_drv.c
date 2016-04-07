@@ -21,6 +21,7 @@
 typedef struct {
     ErlDrvPort port;
     int fd;
+    int verbose;
 } i2c_drv_portdata;
 
 static ErlDrvData i2c_drv_start(ErlDrvPort port, char *buff)
@@ -32,15 +33,19 @@ static ErlDrvData i2c_drv_start(ErlDrvPort port, char *buff)
 
     i2c_drv_portdata* d = (i2c_drv_portdata*)driver_alloc(sizeof(i2c_drv_portdata));
     d->port = port;
+    d->verbose = 1;
 
     /* TODO: fix hardcoding */
+    
     d->fd = open("/dev/i2c-1", O_RDWR, 0);
 
-    fprintf(stderr, "open %i\r\n", d->fd);
+    if (d->verbose)
+        fprintf(stderr, "open %i\r\n", d->fd);
     
     ret = ioctl(d->fd, I2C_SLAVE, addr);
 
-    fprintf(stderr, "ioctl %i\r\n", ret);
+    if (d->verbose)
+        fprintf(stderr, "ioctl %i\r\n", ret);
 
     return (ErlDrvData)d;
 }
@@ -78,7 +83,7 @@ static ErlDrvSSizeT i2c_drv_ctl(ErlDrvData handle,
             I2C_SMBUS_I2C_BLOCK_BROKEN,
             &data);
 
-        if (result)
+        if (result || d->verbose)
             fprintf(stderr, "i2c_smbus_write_block_data reg=0x%02X: [%i, %i] result=%i\r\n",
                 buf0[0], buf0[1], buf0[2], result);
 

@@ -141,7 +141,11 @@ loop(State) ->
 		{show_cursor, _From, Show} ->
 			DisplayControl = flip(State#state.displaycontrol, ?LCD_CURSORON, ?LCD_CURSOROFF, Show),
 			write8(?LCD_DISPLAYCONTROL bor DisplayControl),
-			loop(State#state{displaycontrol=DisplayControl})
+			loop(State#state{displaycontrol=DisplayControl});
+
+		{message, _From, Text} ->
+			[write8(C, 1) || C <- Text],
+			loop(State)
 	end.
 
 is_bit_set(Value, Bit) ->
@@ -189,6 +193,9 @@ enable_display(Enable) ->
 
 show_cursor(Show) ->
 	?MODULE ! {show_cursor, self(), Show}.
+
+message(Text) ->
+	?MODULE ! {message, self(), Text}.
 
 wait(Ms) ->
 	receive
