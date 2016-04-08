@@ -2,9 +2,8 @@
 
 Adafruit 16x2 LCD for Rasperry Pi using MCP23017. Erlang portdriver.
 
-MCP code inspired by https://github.com/adafruit/Adafruit_Python_GPIO/blob/master/Adafruit_GPIO/MCP230xx.py
-
-LCD code inspired by https://github.com/adafruit/Adafruit_Python_CharLCD/blob/master/Adafruit_CharLCD/Adafruit_CharLCD.py
+* MCP code inspired by [MCP230xx](https://github.com/adafruit/Adafruit_Python_GPIO/blob/master/Adafruit_GPIO/MCP230xx.py)
+* LCD code inspired by [Adafruit_CharLCD](https://github.com/adafruit/Adafruit_Python_CharLCD/blob/master/Adafruit_CharLCD/Adafruit_CharLCD.py)
 
 ![LCD display](https://farm2.staticflickr.com/1486/25712163793_69ef335a30_z.jpg)
 
