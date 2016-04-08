@@ -1,5 +1,8 @@
 -module(pi_lcd).
--compile(export_all).
+-behaviour(gen_server).
+-export([code_change/3, handle_call/3, handle_cast/2, handle_info/2, terminate/2]).
+-export([start_link/0, init/1]).
+-export([clear/0, enable_display/1, show_cursor/1, message/1]).
 
 %% Char LCD plate GPIO numbers.
 
@@ -74,11 +77,10 @@ init_button(Button) ->
 	mcp:setup(Button, ?GPIO_IN),
 	mcp:pullup(Button, 1).
 
-start() ->
-	spawn(?MODULE, init, []).
+start_link() ->
+	gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
-init() ->
-	register(?MODULE, self()),
+init(_Args) ->
 	% Set LCD R/W pin to low for writing only.
 	mcp:setup(?LCD_PLATE_RW, ?GPIO_OUT),
 	mcp:output(?LCD_PLATE_RW, ?GPIO_LOW),
@@ -118,35 +120,43 @@ init() ->
     	?LCD_PLATE_BLUE => 0
     	}),
 
-    loop(State)
-.
+	{ok, State}.
+
+handle_call(_Request, _From, State) ->
+	{noreply, State}.
+
+handle_cast({clear}, State) ->
+	write8(?LCD_CLEARDISPLAY),
+	wait(300),
+	{noreply, State};
+
+handle_cast({enable_display, Enable}, State) ->
+	DisplayControl = flip(State#state.displaycontrol, ?LCD_DISPLAYON, ?LCD_DISPLAYOFF, Enable),
+	write8(?LCD_DISPLAYCONTROL bor DisplayControl),
+	{noreply, State#state{displaycontrol=DisplayControl}};
+
+handle_cast({show_cursor, Show}, State) ->
+	DisplayControl = flip(State#state.displaycontrol, ?LCD_CURSORON, ?LCD_CURSOROFF, Show),
+	write8(?LCD_DISPLAYCONTROL bor DisplayControl),
+	{noreply, State#state{displaycontrol=DisplayControl}};
+
+handle_cast({message, Text}, State) ->
+	[write8(C, 1) || C <- Text],
+	{noreply, State}.
+
+handle_info(_Info, State) ->
+	{noreply, State}.
+
+terminate(_Reason, _State) ->
+	ok.
+
+code_change(_OldVsn, State, _Extra) ->
+	{ok, State}.
 
 flip(Value, FlagOn, _FlagOff, Enable) when Enable =:= 1 ->
 	Value bor FlagOn;
 flip(Value, _FlagOn, FlagOff, Enable) when Enable =:= 0 ->
 	Value band bnot(FlagOff).
-
-loop(State) ->
-	receive
-		{clear, _From} ->
-			write8(?LCD_CLEARDISPLAY),
-			wait(300),
-			loop(State);
-
-		{enable_display, _From, Enable} ->
-			DisplayControl = flip(State#state.displaycontrol, ?LCD_DISPLAYON, ?LCD_DISPLAYOFF, Enable),
-			write8(?LCD_DISPLAYCONTROL bor DisplayControl),
-			loop(State#state{displaycontrol=DisplayControl});
-
-		{show_cursor, _From, Show} ->
-			DisplayControl = flip(State#state.displaycontrol, ?LCD_CURSORON, ?LCD_CURSOROFF, Show),
-			write8(?LCD_DISPLAYCONTROL bor DisplayControl),
-			loop(State#state{displaycontrol=DisplayControl});
-
-		{message, _From, Text} ->
-			[write8(C, 1) || C <- Text],
-			loop(State)
-	end.
 
 is_bit_set(Value, Bit) ->
 	((Value bsr Bit) band 1).
@@ -186,16 +196,16 @@ pulse_enable() ->
 .
 
 clear() ->
-	?MODULE ! {clear, self()}.
+	gen_server:cast(?MODULE, {clear}).
 
 enable_display(Enable) ->
-	?MODULE ! {enable_display, self(), Enable}.
+	gen_server:cast(?MODULE, {enable_display, Enable}).
 
 show_cursor(Show) ->
-	?MODULE ! {show_cursor, self(), Show}.
+	gen_server:cast(?MODULE, {show_cursor, Show}).
 
 message(Text) ->
-	?MODULE ! {message, self(), Text}.
+	gen_server:cast(?MODULE, {message, Text}).
 
 wait(Ms) ->
 	receive

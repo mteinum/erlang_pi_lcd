@@ -1,35 +1,37 @@
 -module(i2c).
--export([start/0, init/0, write_list/2]).
+-behaviour(gen_server).
+-export([code_change/3, handle_call/3, handle_cast/2, handle_info/2, terminate/2]).
+-export([start_link/0, init/1, write_list/2]).
 
 -define(CMD_WRITE_BLOCK_DATA, 3).
 
-start() ->
+start_link() ->
 	case erl_ddll:load_driver("ebin", i2c_drv) of
 		ok -> ok;
 		{error, already_loaded} -> ok;
 		{error, Message} -> exit(erl_ddll:format_error(Message))
 	end,
-	spawn(?MODULE, init, []).
+	gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
-init() ->
-	register(i2c, self()),
+init(_Args) ->
 	Port = open_port({spawn_driver, i2c_drv}, [use_stdio, binary]),
-	loop(Port).
+	{ ok, Port }.
 
-loop(Port) ->
-	receive
-		{write_list, From, Register, Value} ->
-			port_control(Port, ?CMD_WRITE_BLOCK_DATA, [Register, Value]),
-			From ! {self(), ok},
-			loop(Port);
+handle_call({write_list, Register, Value}, _From, State) ->
+	port_control(State, ?CMD_WRITE_BLOCK_DATA, [Register, Value]),
+	{reply, ok, State}.
 
-		{'EXIT', Port, Reason} ->
-	    	io:format("~p ~n", [Reason]),
-	    	exit(port_terminated)
-	end.
+handle_cast(_Request, State) ->
+	{noreply, State}.
+
+handle_info(_Info, State) ->
+	{noreply, State}.
+
+terminate(_Reason, _State) ->
+	ok.
+
+code_change(_OldVsn, State, _Extra) ->
+	{ok, State}.	
 
 write_list(Register, Value) ->
-	i2c ! {write_list, self(), Register, Value},
-	receive
-		{_From, ok} -> ok
-	end.
+	gen_server:call(?MODULE, {write_list, Register, Value}).

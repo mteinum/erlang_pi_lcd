@@ -33,7 +33,7 @@ static ErlDrvData i2c_drv_start(ErlDrvPort port, char *buff)
 
     i2c_drv_portdata* d = (i2c_drv_portdata*)driver_alloc(sizeof(i2c_drv_portdata));
     d->port = port;
-    d->verbose = 1;
+    d->verbose = 0;
 
     /* TODO: fix hardcoding */
     
