@@ -2,7 +2,7 @@
 -behaviour(gen_server).
 -export([code_change/3, handle_call/3, handle_cast/2, handle_info/2, terminate/2]).
 -export([start_link/0, init/1]).
--export([clear/0, enable_display/1, show_cursor/1, message/1]).
+-export([clear/0, enable_display/1, show_cursor/1, message/1, home/0]).
 
 %% Char LCD plate GPIO numbers.
 
@@ -142,8 +142,12 @@ handle_cast({show_cursor, Show}, State) ->
 
 handle_cast({message, Text}, State) ->
 	[write8(C, 1) || C <- Text],
-	{noreply, State}.
+	{noreply, State};
 
+handle_cast({home}, State) ->
+	write8(?LCD_CLEARDISPLAY),
+	{noreply, State}.
+	
 handle_info(_Info, State) ->
 	{noreply, State}.
 
@@ -206,6 +210,10 @@ show_cursor(Show) ->
 
 message(Text) ->
 	gen_server:cast(?MODULE, {message, Text}).
+
+home() ->
+	gen_server:cast(?MODULE, {home}).
+
 
 wait(Ms) ->
 	receive

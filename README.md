@@ -22,7 +22,6 @@ pi_lcd:message("#ERLANG ROCKS").
 
 * Button support
 * Multiline
-* home
 * set_cursor
 * blink
 * move_left
