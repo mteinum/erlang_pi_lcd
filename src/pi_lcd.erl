@@ -2,7 +2,16 @@
 -behaviour(gen_server).
 -export([code_change/3, handle_call/3, handle_cast/2, handle_info/2, terminate/2]).
 -export([start_link/0, init/1]).
--export([clear/0, enable_display/1, show_cursor/1, message/1, home/0]).
+-export([clear/0,
+	     enable_display/1,
+	     show_cursor/1,
+	     message/1,
+	     home/0,
+	     set_cursor/2,
+	     blink/1,
+	     move_left/0,
+	     move_right/0,
+	     autoscroll/1]).
 
 %% Char LCD plate GPIO numbers.
 
@@ -66,6 +75,11 @@
 -define(DOWN                    , 2).
 -define(UP                      , 3).
 -define(LEFT                    , 4).
+
+% LCD_ROW_OFFSETS         = (0x00, 0x40, 0x14, 0x54)
+
+lcd_row_offset(Row) when Row =:= 1 -> 16#00;
+lcd_row_offset(Row) when Row =:= 2 -> 16#40.
 
 % lcd state
 -record(state, {
@@ -131,18 +145,40 @@ handle_cast({clear}, State) ->
 	{noreply, State};
 
 handle_cast({enable_display, Enable}, State) ->
-	DisplayControl = flip(State#state.displaycontrol, ?LCD_DISPLAYON, ?LCD_DISPLAYOFF, Enable),
+	DisplayControl = flip(State#state.displaycontrol, ?LCD_DISPLAYON, Enable),
 	write8(?LCD_DISPLAYCONTROL bor DisplayControl),
 	{noreply, State#state{displaycontrol=DisplayControl}};
 
 handle_cast({show_cursor, Show}, State) ->
-	DisplayControl = flip(State#state.displaycontrol, ?LCD_CURSORON, ?LCD_CURSOROFF, Show),
+	DisplayControl = flip(State#state.displaycontrol, ?LCD_CURSORON, Show),
 	write8(?LCD_DISPLAYCONTROL bor DisplayControl),
 	{noreply, State#state{displaycontrol=DisplayControl}};
 
 handle_cast({message, Text}, State) ->
 	[write8(C, 1) || C <- Text],
 	{noreply, State};
+
+handle_cast({set_cursor, Col, Row}, State) ->
+	write8(?LCD_SETDDRAMADDR bor (Col + lcd_row_offset(Row))),
+	{noreply, State};
+
+handle_cast({blink, On}, State) ->
+	DisplayControl = flip(State#state.displaycontrol, ?LCD_BLINKON, On),
+	write8(?LCD_DISPLAYCONTROL bor DisplayControl),
+	{noreply, State#state{displaycontrol=DisplayControl}};
+
+handle_cast({move_left}, State) ->
+	write8(?LCD_CURSORSHIFT bor ?LCD_DISPLAYMOVE bor ?LCD_MOVELEFT),
+	{noreply, State};
+
+handle_cast({move_right}, State) ->
+	write8(?LCD_CURSORSHIFT bor ?LCD_DISPLAYMOVE bor ?LCD_MOVERIGHT),
+	{noreply, State};
+
+handle_cast({autoscroll, On}, State) ->
+	DisplayMode = flip(State#state.displaymode, ?LCD_ENTRYSHIFTINCREMENT, On),
+	write8(?LCD_ENTRYMODESET bor DisplayMode),
+	{noreply, State#state{displaymode=DisplayMode}};
 
 handle_cast({home}, State) ->
 	write8(?LCD_CLEARDISPLAY),
@@ -157,10 +193,10 @@ terminate(_Reason, _State) ->
 code_change(_OldVsn, State, _Extra) ->
 	{ok, State}.
 
-flip(Value, FlagOn, _FlagOff, Enable) when Enable =:= 1 ->
-	Value bor FlagOn;
-flip(Value, _FlagOn, FlagOff, Enable) when Enable =:= 0 ->
-	Value band bnot(FlagOff).
+flip(Value, Flag, Enable) when Enable =:= 1 ->
+	Value bor Flag;
+flip(Value, Flag, Enable) when Enable =:= 0 ->
+	Value band bnot(Flag).
 
 is_bit_set(Value, Bit) ->
 	((Value bsr Bit) band 1).
@@ -208,12 +244,26 @@ enable_display(Enable) ->
 show_cursor(Show) ->
 	gen_server:cast(?MODULE, {show_cursor, Show}).
 
+blink(On) ->
+	gen_server:cast(?MODULE, {blink, On}).
+
 message(Text) ->
 	gen_server:cast(?MODULE, {message, Text}).
 
 home() ->
 	gen_server:cast(?MODULE, {home}).
 
+set_cursor(Col, Row) ->
+	gen_server:cast(?MODULE, {set_cursor, Col, Row}).
+
+move_left() ->
+	gen_server:cast(?MODULE, {move_left}).
+
+move_right() ->
+	gen_server:cast(?MODULE, {move_right}).
+
+autoscroll(On) ->
+	gen_server:cast(?MODULE, {autoscroll, On}).
 
 wait(Ms) ->
 	receive
