@@ -17,6 +17,7 @@
 
 // commands for (*control)
 #define CMD_WRITE_BLOCK_DATA 3
+#define CMD_OPEN             4
 
 typedef struct {
     ErlDrvPort port;
@@ -26,26 +27,12 @@ typedef struct {
 
 static ErlDrvData i2c_drv_start(ErlDrvPort port, char *buff)
 {
-    int ret;
-    int addr = 0x20;
-
     set_port_control_flags(port, PORT_CONTROL_FLAG_BINARY);
 
     i2c_drv_portdata* d = (i2c_drv_portdata*)driver_alloc(sizeof(i2c_drv_portdata));
     d->port = port;
+    d->fd = 0;
     d->verbose = 0;
-
-    /* TODO: fix hardcoding */
-    
-    d->fd = open("/dev/i2c-1", O_RDWR, 0);
-
-    if (d->verbose)
-        fprintf(stderr, "open %i\r\n", d->fd);
-    
-    ret = ioctl(d->fd, I2C_SLAVE, addr);
-
-    if (d->verbose)
-        fprintf(stderr, "ioctl %i\r\n", ret);
 
     return (ErlDrvData)d;
 }
@@ -66,8 +53,11 @@ static ErlDrvSSizeT i2c_drv_ctl(ErlDrvData handle,
                  unsigned int cmd, char* buf0, ErlDrvSizeT len,
                  char** rbuf, ErlDrvSizeT rsize)
 {
-    __s32 result;
+    __s32 result, ret;
     union i2c_smbus_data data;
+    char driver_path[0x1000];
+    int addr = 0x20;
+
     i2c_drv_portdata* d = (i2c_drv_portdata*)handle;
 
     if (cmd == CMD_WRITE_BLOCK_DATA && len == 3) {
@@ -88,6 +78,22 @@ static ErlDrvSSizeT i2c_drv_ctl(ErlDrvData handle,
                 buf0[0], buf0[1], buf0[2], result);
 
         return 0;
+    }
+    else if (cmd == CMD_OPEN) {
+        memset(driver_path, 0, sizeof(driver_path));
+        memcpy(driver_path, buf0, len);
+
+        d->fd = open(driver_path, O_RDWR, 0);
+
+        if (d->verbose)
+            fprintf(stderr, "open %i\r\n", d->fd);
+    
+        if (d->fd) {
+            ret = ioctl(d->fd, I2C_SLAVE, addr);
+
+            if (d->verbose)
+                fprintf(stderr, "ioctl %i\r\n", ret);
+        }
     }
 
     return 0;
@@ -130,7 +136,5 @@ ErlDrvEntry i2c_drv_portdriver_entry = {
 
 DRIVER_INIT(i2c_drv) /* must match name in driver_entry */
 {
-    fprintf(stderr, "driver_init\r\n");
-
     return &i2c_drv_portdriver_entry;
 }

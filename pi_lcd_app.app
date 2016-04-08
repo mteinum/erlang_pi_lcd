@@ -4,5 +4,6 @@
   {modules, {pi_lcd_app, pi_lcd_sup, pi_lcd, mcp, i2c}},
   {registered, [pi_lcd, mcp, i2c]},
   {applications, [kernel, stdlib]},
-  {mod, {pi_lcd_app, []}}
+  {mod, {pi_lcd_app, []}},
+  {env, [{i2c_device, "/dev/i2c-1"}]}
 ]}.

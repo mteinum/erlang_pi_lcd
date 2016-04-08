@@ -8,9 +8,10 @@ start_link() ->
 	supervisor:start_link(pi_lcd_sup, []).
 
 init(_Args) ->
+	{ok, Device} = application:get_env(pi_lcd_app, i2c_device),
 	Flags = #{strategy => one_for_all, intensity => 1, period => 5},
 	ChildSpecs = [#{id => i2c,
-	                start => {i2c, start_link, []},
+	                start => {i2c, start_link, [Device]},
 	                restart => permanent,
 	                shutdown => brutal_kill,
 	                type => worker,
