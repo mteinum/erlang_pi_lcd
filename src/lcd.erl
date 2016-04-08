@@ -1,4 +1,4 @@
--module(pi_lcd).
+-module(lcd).
 -behaviour(gen_server).
 -export([code_change/3, handle_call/3, handle_cast/2, handle_info/2, terminate/2]).
 -export([start_link/0, init/1]).

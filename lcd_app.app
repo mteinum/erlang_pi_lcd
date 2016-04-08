@@ -1,9 +1,9 @@
-{application, pi_lcd_app,
+{application, lcd_app,
  [{description, "Adafruid LCD 16x2, MCP23017, Raspberry Pi application"},
   {vsn, "1"},
-  {modules, {pi_lcd_app, pi_lcd_sup, pi_lcd, mcp, i2c}},
-  {registered, [pi_lcd, mcp, i2c]},
+  {modules, {lcd_app, lcd_sup, lcd, mcp, i2c}},
+  {registered, [lcd, mcp, i2c]},
   {applications, [kernel, stdlib]},
-  {mod, {pi_lcd_app, []}},
+  {mod, {lcd_app, []}},
   {env, [{i2c_device, "/dev/i2c-1"}]}
 ]}.
