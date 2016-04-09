@@ -3,6 +3,8 @@
 %%%
 %%% MCP23017 interface. Keep register cached
 %%%
+%%% http://ww1.microchip.com/downloads/en/DeviceDoc/21952b.pdf
+%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 -module(mcp).
 -behaviour(gen_server).
@@ -12,21 +14,18 @@
 
 -record(state, {iodir = 0, gppu = 0, gpio = 0}).
 
--define(GPIO,  16#12).
--define(IODIR, 16#00).
--define(GPPU,  16#0C).
-
--define(GPIO_OUT, 0).
--define(GPIO_IN,  1).
+-define(REGISTER_GPIO,  16#12).
+-define(REGISTER_IODIR, 16#00).
+-define(REGISTER_GPPU,  16#0C).
 
 write_iodir(Value) ->
-	i2c:write_word(?IODIR, Value).
+	i2c:write_word(?REGISTER_IODIR, Value).
 
 write_gppu(Value) ->
-	i2c:write_word(?GPPU, Value).
+	i2c:write_word(?REGISTER_GPPU, Value).
 
 write_gpio(Value) ->
-	i2c:write_word(?GPIO, Value).
+	i2c:write_word(?REGISTER_GPIO, Value).
 
 set_pin(Word, Pin, Value) when Value =:= 1 ->
 	Word bor (1 bsl Pin);
