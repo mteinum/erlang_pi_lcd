@@ -182,12 +182,8 @@ handle_cast({autoscroll, On}, State) ->
 	write8(?LCD_ENTRYMODESET bor DisplayMode),
 	{noreply, State#state{displaymode=DisplayMode}};
 
-handle_cast({backlight, On}, State) ->
-	mcp:output_pins(#{
-    	?LCD_PLATE_RED => On,
-    	?LCD_PLATE_GREEN => On,
-    	?LCD_PLATE_BLUE => On
-    	}),
+handle_cast({backlight, Off}, State) ->
+	mcp:output_pins(#{ ?LCD_PLATE_RED => Off, ?LCD_PLATE_GREEN => Off, ?LCD_PLATE_BLUE => Off }),
 	{noreply, State};
 
 handle_cast({home}, State) ->
@@ -275,8 +271,8 @@ move_right() ->
 autoscroll(On) ->
 	gen_server:cast(?MODULE, {autoscroll, On}).
 
-backlight(On) ->
-	gen_server:cast(?MODULE, {backlight, On}).
+backlight(Off) ->
+	gen_server:cast(?MODULE, {backlight, Off}).
 
 wait(Ms) ->
 	receive
