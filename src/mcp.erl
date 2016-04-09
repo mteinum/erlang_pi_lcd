@@ -19,20 +19,14 @@
 -define(GPIO_OUT, 0).
 -define(GPIO_IN,  1).
 
-word_to_byte_array(Word) ->
-	[Word band 16#ff, Word bsr 8].
-
-write_word(Register, W) ->
-	i2c:write_list(Register, word_to_byte_array(W)).
-
 write_iodir(Value) ->
-	write_word(?IODIR, Value).
+	i2c:write_word(?IODIR, Value).
 
 write_gppu(Value) ->
-	write_word(?GPPU, Value).
+	i2c:write_word(?GPPU, Value).
 
 write_gpio(Value) ->
-	write_word(?GPIO, Value).
+	i2c:write_word(?GPIO, Value).
 
 set_pin(Word, Pin, Value) when Value =:= 1 ->
 	Word bor (1 bsl Pin);

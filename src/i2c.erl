@@ -1,7 +1,7 @@
 -module(i2c).
 -behaviour(gen_server).
 -export([code_change/3, handle_call/3, handle_cast/2, handle_info/2, terminate/2]).
--export([start_link/1, init/1, write_list/2]).
+-export([start_link/1, init/1, write_list/2, write_word/2]).
 
 -define(CMD_WRITE_BLOCK_DATA, 3).
 -define(CMD_OPEN, 4).
@@ -37,3 +37,9 @@ code_change(_OldVsn, State, _Extra) ->
 
 write_list(Register, Value) ->
 	gen_server:call(?MODULE, {write_list, Register, Value}).
+
+word_to_byte_array(Word) ->
+	[Word band 16#ff, Word bsr 8].
+
+write_word(Register, W) ->
+	write_list(Register, word_to_byte_array(W)).
