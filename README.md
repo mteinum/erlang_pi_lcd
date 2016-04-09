@@ -7,7 +7,7 @@ This is a port of the Python source code to Erlang.
 * MCP code inspired by [MCP230xx](https://github.com/adafruit/Adafruit_Python_GPIO/blob/master/Adafruit_GPIO/MCP230xx.py)
 * LCD code inspired by [Adafruit_CharLCD](https://github.com/adafruit/Adafruit_Python_CharLCD/blob/master/Adafruit_CharLCD/Adafruit_CharLCD.py)
 
->> At this time, the code and plate can control the white backlight on or off. There is no support for PWM control of the backlight at this time, so if you need to have more granular control of the backlight, this plate can't do that (the I2C expander does not have PWM output).
+> At this time, the code and plate can control the white backlight on or off. There is no support for PWM control of the backlight at this time, so if you need to have more granular control of the backlight, this plate can't do that (the I2C expander does not have PWM output).
 
 For more information on the product, prices and distributors, visit the [Adafruit product page](https://www.adafruit.com/products/1115).
 
