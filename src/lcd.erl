@@ -3,17 +3,17 @@
 -export([code_change/3, handle_call/3, handle_cast/2, handle_info/2, terminate/2]).
 -export([start_link/0, init/1]).
 -export([clear/0,
-	     enable_display/1,
-	     show_cursor/1,
-	     message/1,
-	     home/0,
-	     set_cursor/2,
-	     blink/1,
-	     move_left/0,
-	     move_right/0,
-	     autoscroll/1,
-	     backlight/1
-	     ]).
+		 enable_display/1,
+		 show_cursor/1,
+		 message/1,
+		 home/0,
+		 set_cursor/2,
+		 blink/1,
+		 move_left/0,
+		 move_right/0,
+		 autoscroll/1,
+		 backlight/1
+		 ]).
 
 %% Char LCD plate GPIO numbers.
 
@@ -59,11 +59,9 @@
 -define(LCD_MOVELEFT            , 16#00).
 
 %% Function set flags
--define(LCD_8BITMODE            , 16#10).
 -define(LCD_4BITMODE            , 16#00).
 -define(LCD_2LINE               , 16#08).
 -define(LCD_1LINE               , 16#00).
--define(LCD_5x10DOTS            , 16#04).
 -define(LCD_5x8DOTS             , 16#00).
 
 -define(GPIO_IN,   1).
@@ -93,6 +91,10 @@ init_button(Button) ->
 	mcp:setup(Button, ?GPIO_IN),
 	mcp:pullup(Button, 1).
 
+init_pin(Pin) ->
+	mcp:setup(Pin, ?GPIO_OUT)
+.
+
 start_link() ->
 	gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
@@ -100,41 +102,33 @@ init(_Args) ->
 	% Set LCD R/W pin to low for writing only.
 	mcp:setup(?LCD_PLATE_RW, ?GPIO_OUT),
 	mcp:output(?LCD_PLATE_RW, ?GPIO_LOW),
-
 	% Set buttons as inputs with pull-ups enabled.
 	[init_button(Button) || Button <- [?SELECT, ?RIGHT, ?DOWN, ?UP, ?LEFT]],
-	
 	% Setup all pins as outputs.
-	[mcp:setup(Pin, ?GPIO_OUT) || Pin <- [
-     								?LCD_PLATE_RS,
-                                    ?LCD_PLATE_EN,
-                                    ?LCD_PLATE_D4,
-                                    ?LCD_PLATE_D5,
-                                    ?LCD_PLATE_D6,
-                                    ?LCD_PLATE_D7]],
+	[init_pin(Pin) || Pin <- [?LCD_PLATE_RS, ?LCD_PLATE_EN, ?LCD_PLATE_D4, ?LCD_PLATE_D5, ?LCD_PLATE_D6, ?LCD_PLATE_D7]],
 	% Initialize the display.
 	write8(16#33),
-    write8(16#32),
-    % Initialize display control, function, and mode registers
-    State = #state{},
+	write8(16#32),
+	% Initialize display control, function, and mode registers
+	State = #state{},
 
-    write8(?LCD_DISPLAYCONTROL bor State#state.displaycontrol),
-    write8(?LCD_FUNCTIONSET bor State#state.displayfunction),
-    write8(?LCD_ENTRYMODESET bor State#state.displaymode),
+	write8(?LCD_DISPLAYCONTROL bor State#state.displaycontrol),
+	write8(?LCD_FUNCTIONSET bor State#state.displayfunction),
+	write8(?LCD_ENTRYMODESET bor State#state.displaymode),
 
 	write8(?LCD_CLEARDISPLAY),
 	wait(300),
 
-    mcp:setup(?LCD_PLATE_RED, ?GPIO_OUT),
-    mcp:setup(?LCD_PLATE_GREEN, ?GPIO_OUT),
-    mcp:setup(?LCD_PLATE_BLUE, ?GPIO_OUT),
+	mcp:setup(?LCD_PLATE_RED, ?GPIO_OUT),
+	mcp:setup(?LCD_PLATE_GREEN, ?GPIO_OUT),
+	mcp:setup(?LCD_PLATE_BLUE, ?GPIO_OUT),
 
-    % mcp:output_pins(rgb_to_pins(1,1,1))
-    mcp:output_pins(#{
-    	?LCD_PLATE_RED => 0,
-    	?LCD_PLATE_GREEN => 0,
-    	?LCD_PLATE_BLUE => 0
-    	}),
+	% mcp:output_pins(rgb_to_pins(1,1,1))
+	mcp:output_pins(#{
+		?LCD_PLATE_RED => 0,
+		?LCD_PLATE_GREEN => 0,
+		?LCD_PLATE_BLUE => 0
+		}),
 
 	{ok, State}.
 
