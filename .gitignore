@@ -1,3 +1,5 @@
 *._*
 ebin/
 rebar.lock
+_build/
+priv/

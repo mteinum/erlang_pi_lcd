@@ -7,7 +7,8 @@
 -define(CMD_OPEN, 4).
 
 start_link(Device) ->
-	case erl_ddll:load_driver("ebin", i2c_drv) of
+	Dir = code:priv_dir(lcd_app),
+	case erl_ddll:load_driver(Dir, i2c_drv) of
 		ok -> ok;
 		{error, already_loaded} -> ok;
 		{error, Message} -> exit(erl_ddll:format_error(Message))
