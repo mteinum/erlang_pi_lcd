@@ -15,27 +15,46 @@ I got mine from [Kjell and Company](http://www.kjell.com/no/produkter/data-og-ne
 
 ![LCD display](https://farm2.staticflickr.com/1486/25712163793_69ef335a30_z.jpg)
 
-## Build
+## Build and test
 
-The portdriver must be compiled
+lcd_app uses rebar3 as build tool.
+
+### Compile
 
 ```sh
-pi@rpi02:~/adafruit_lcd/c_src $ make
-cc -o ../ebin/i2c_drv.so -fpic -shared -Wall -Wformat i2c_drv.c
+rebar3 compile
 ```
 
-Then compile the erlang source code:
+### Test
+
+```sh
+rebar3 shell
+```
+
+### Example
 
 ```sh
 pi@rpi02:~/adafruit_lcd $ rebar3 compile
-```
+===> Verifying dependencies...
+===> Compiling lcd_app
+make: Entering directory '/home/pi/adafruit_lcd/c_src'
+cc -o ../priv/i2c_drv.so -fpic -shared -Wall -Wformat i2c_drv.c
+make: Leaving directory '/home/pi/adafruit_lcd/c_src'
+pi@rpi02:~/adafruit_lcd $ rebar3 shell
+===> Verifying dependencies...
+===> Compiling lcd_app
+make: Entering directory '/home/pi/adafruit_lcd/c_src'
+cc -o ../priv/i2c_drv.so -fpic -shared -Wall -Wformat i2c_drv.c
+make: Leaving directory '/home/pi/adafruit_lcd/c_src'
+Erlang/OTP 18 [erts-7.3] [source] [smp:4:4] [async-threads:0] [kernel-poll:false]
 
-## Usage
+Eshell V7.3  (abort with ^G)
+1> ===> The rebar3 shell is a development tool; to deploy applications in production, consider using releases (http://www.rebar3.org/v3.0/docs/releases)
+===> Booted lcd_app
 
-```erlang
-application:start(lcd_app).
-
-lcd:message("#ERLANG ROCKS").
+1> lcd:message("HELLO!").
+ok
+2>
 ```
 
 ## lcd methods
