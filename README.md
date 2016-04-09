@@ -34,12 +34,6 @@ rebar3 shell
 ### Example
 
 ```sh
-pi@rpi02:~/adafruit_lcd $ rebar3 compile
-===> Verifying dependencies...
-===> Compiling lcd_app
-make: Entering directory '/home/pi/adafruit_lcd/c_src'
-cc -o ../priv/i2c_drv.so -fpic -shared -Wall -Wformat i2c_drv.c
-make: Leaving directory '/home/pi/adafruit_lcd/c_src'
 pi@rpi02:~/adafruit_lcd $ rebar3 shell
 ===> Verifying dependencies...
 ===> Compiling lcd_app
