@@ -60,7 +60,6 @@ lcd:message("#ERLANG ROCKS").
 ## TODO
 
 * Button support
-* message/1 multiline support
 * set_left_to_right
 * set_right_to_left
 * create_char

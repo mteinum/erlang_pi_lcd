@@ -132,6 +132,11 @@ init(_Args) ->
 
 	{ok, State}.
 
+write_char(H) when H =:= 10 ->
+	write8(?LCD_SETDDRAMADDR bor (0 + lcd_row_offset(2)));
+write_char(H)  ->
+	write8(H, 1).
+
 handle_call(_Request, _From, State) ->
 	{noreply, State}.
 
@@ -151,7 +156,7 @@ handle_cast({show_cursor, Show}, State) ->
 	{noreply, State#state{displaycontrol=DisplayControl}};
 
 handle_cast({message, Text}, State) ->
-	[write8(C, 1) || C <- Text],
+	[write_char(Ch) || Ch <- Text],
 	{noreply, State};
 
 handle_cast({set_cursor, Col, Row}, State) ->
