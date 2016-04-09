@@ -13,14 +13,14 @@ This is a port of the Python source code to Erlang.
 
 The portdriver must be compiled
 
-```
+```sh
 pi@rpi02:~/adafruit_lcd/c_src $ make
 cc -o ../ebin/i2c_drv.so -fpic -shared -Wall -Wformat i2c_drv.c
 ```
 
 Then compile the erlang source code:
 
-```
+```sh
 pi@rpi02:~/adafruit_lcd $ erl -make
 Recompile: src/mcp
 Recompile: src/lcd_sup
