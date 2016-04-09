@@ -55,6 +55,7 @@ lcd:message("#ERLANG ROCKS").
 * move_left/0,
 * move_right/0,
 * autoscroll/1
+* backlight/1
 
 ## TODO
 
@@ -62,5 +63,4 @@ lcd:message("#ERLANG ROCKS").
 * message/1 multiline support
 * set_left_to_right
 * set_right_to_left
-* set_backlight
 * create_char
