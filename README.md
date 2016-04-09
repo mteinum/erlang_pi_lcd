@@ -1,6 +1,6 @@
 # Adafruit Blue&White 16x2 LCD+Keypad Kit for Raspberry Pi
 
-Erlang/OTP Application for the 16x2 LCD with MCP23017 on Raspberry Pi.
+Erlang/OTP Application for the 16x2 LCD with [MCP23017](http://ww1.microchip.com/downloads/en/DeviceDoc/21952b.pdf) on Raspberry Pi.
 
 This is a port of the Python source code to Erlang.
 
