@@ -70,4 +70,3 @@ ok
 * Button support
 * set_left_to_right
 * set_right_to_left
-* create_char ([HD44780 LCD User-Defined Graphics](http://www.quinapalus.com/hd44780udg.html))

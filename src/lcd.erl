@@ -12,7 +12,8 @@
 		 move_left/0,
 		 move_right/0,
 		 autoscroll/1,
-		 backlight/1
+		 backlight/1,
+	 create_char/2
 		 ]).
 
 %% Char LCD plate GPIO numbers.
@@ -185,6 +186,11 @@ handle_cast({backlight, Off}, State) ->
 	mcp:output_pins(#{ ?LCD_PLATE_RED => Off, ?LCD_PLATE_GREEN => Off, ?LCD_PLATE_BLUE => Off }),
 	{noreply, State};
 
+handle_cast({create_char, Pos, Char}, State) ->
+    write8(?LCD_SETCGRAMADDR bor Pos bsl 3),
+    [ write8(B, 1) || B <- tuple_to_list(Char) ],
+    {noreply, State};
+
 handle_cast({home}, State) ->
 	write8(?LCD_CLEARDISPLAY),
 	{noreply, State}.
@@ -272,6 +278,17 @@ autoscroll(On) ->
 
 backlight(Off) ->
 	gen_server:cast(?MODULE, {backlight, Off}).
+
+
+%% @doc Fill one of the first 8 CGRAM locations with custom characters.
+%% The location parameter should be between 0 and 7 and pattern should
+%% provide an array of 8 bytes containing the pattern. E.g. you can easyly
+%% design your custom character at http://www.quinapalus.com/hd44780udg.html
+%% To show your custom character use eg. lcd.message('\x01')
+%% @end
+-spec create_char(integer(), tuple()) -> ok.
+create_char(Pos, Char) when Pos < 8 andalso is_tuple(Char) andalso size(Char) =:= 8 ->
+    gen_server:cast(?MODULE, {create_char, Pos, Char}).
 
 wait(Ms) ->
 	receive
