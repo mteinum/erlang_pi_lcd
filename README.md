@@ -51,6 +51,29 @@ ok
 2>
 ```
 
+### Example create_char
+
+```sh
+pi@rpi02:~/adafruit_lcd $ rebar3 shell
+===> Verifying dependencies...
+===> Compiling lcd_app
+make: Entering directory '/home/pi/adafruit_lcd/c_src'
+cc -o ../priv/i2c_drv.so -fpic -shared -Wall -Wformat i2c_drv.c
+make: Leaving directory '/home/pi/adafruit_lcd/c_src'
+Erlang/OTP 18 [erts-7.3] [source] [smp:4:4] [async-threads:0] [kernel-poll:false]
+
+Eshell V7.3  (abort with ^G)
+1> ===> The rebar3 shell is a development tool; to deploy applications in production, consider using releases (http://www.rebar3.org/v3.0/docs/releases)
+===> Booted lcd_app
+lcd:create_char(1, {2, 3, 2, 2, 14, 30, 12, 0}).
+ok
+2> lcd:clear().
+ok
+3> lcd:message([1]).
+ok
+4>
+```
+
 ## lcd methods
 
 * clear/0,
@@ -64,6 +87,7 @@ ok
 * move_right/0,
 * autoscroll/1
 * backlight/1
+* create_char/2
 
 ## TODO
 
